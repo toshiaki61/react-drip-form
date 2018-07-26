@@ -1,5 +1,5 @@
 // @flow
-import React, { Component } from 'react';
+import * as React from 'react';
 import invariant from 'invariant';
 import { Validator } from 'drip-form-validator';
 import * as dot from 'dot-wild';
@@ -12,6 +12,8 @@ import hasProp from './utils/hasProp';
 import cancelEvent from './utils/cancelEvent';
 import getShallowFilteredValues from './utils/getShallowFilteredValues';
 import makeDisplayName from './utils/makeDisplayName';
+import { Provider } from './dripFormContext';
+
 import { DFContextTypes } from './types';
 
 import type {
@@ -25,14 +27,11 @@ import type {
   MessageList,
   MessageFieldList,
   LabelList,
+  FieldProps,
+  FieldState,
 } from './types';
 
-import type {
-  Props as FieldProps,
-  State as FieldState,
-} from './dripFormField';
-
-type FieldComponent = React$Component<FieldProps, FieldProps, FieldState>;
+type FieldComponent = React$Component<FieldProps, FieldState>;
 
 
 export type FormOptions = {
@@ -85,10 +84,12 @@ const dripForm = (formOptions: FormOptions = {}) => {
     ...formOptions,
   };
 
-  return (WrappedComponent: $WrappedComponent<*, *, *>) => (
-    class DripForm extends Component<*, *, *> {
+  return (WrappedComponent: $WrappedComponent<*, *>) => (
+    class DripForm extends React.Component<*, *> {
       static displayName = makeDisplayName(WrappedComponent, 'dripForm');
+
       static childContextTypes = DFContextTypes;
+
       static defaultProps = {
         values: {},
         onInitialize: null,
@@ -101,14 +102,19 @@ const dripForm = (formOptions: FormOptions = {}) => {
       };
 
       props: Props;
+
       state: State;
+
       fields: { [key: string]: FieldComponent };
+
       values: Values;
+
       validator: any;
+
       mounted: boolean = false;
 
-      constructor(props: Props, context: any) {
-        super(props, context);
+      constructor(props: Props) {
+        super(props);
 
         this.values = { ...(props.values || {}) };
         this.fields = {};
@@ -185,12 +191,14 @@ const dripForm = (formOptions: FormOptions = {}) => {
         const { values } = nextProps;
 
         if (!isEqual(values, _values)) {
+          console.log('componentWillReceiveProps', values, _values);
           this.setState({ values });
         }
       }
 
       setStateIfMounted(state: $Shape<State>, callback?: Function) {
         if (this.mounted) {
+          console.log('setStateIfMounted', state, callback);
           this.setState(state, callback);
         }
       }
@@ -311,7 +319,9 @@ const dripForm = (formOptions: FormOptions = {}) => {
       };
 
       unregister = (name: string): void => {
-        const { values, errors, touches, dirties } = this.state;
+        const {
+          values, errors, touches, dirties,
+        } = this.state;
 
         delete this.fields[name];
         delete errors[name];
@@ -573,9 +583,7 @@ const dripForm = (formOptions: FormOptions = {}) => {
 
       asyncValidate(name: string): Promise<void> {
         return new Promise((resolve, reject) => {
-          const filteredValidating = () => this.state.validating.filter(f =>
-            f !== name
-          );
+          const filteredValidating = () => this.state.validating.filter(f => f !== name);
 
           const handler = (success: boolean) => () => {
             this.setStateIfMounted({
@@ -585,7 +593,7 @@ const dripForm = (formOptions: FormOptions = {}) => {
               if (success) {
                 resolve();
               } else {
-                reject(null);
+                reject();
               }
             });
           };
@@ -730,7 +738,11 @@ const dripForm = (formOptions: FormOptions = {}) => {
           },
         };
 
-        return <WrappedComponent {...props} />;
+        return (
+          <Provider value={{ context: this.getChildContext() }}>
+            <WrappedComponent {...props} />
+          </Provider>
+        );
       }
     }
   );

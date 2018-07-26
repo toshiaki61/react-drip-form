@@ -2,9 +2,9 @@
 /* eslint-disable import/prefer-default-export */
 import PropTypes from 'prop-types';
 
-export type FunctionalComponent<P, C> = (props: P, context: C) => ?React$Element<any>;
-export type ClassComponent<D, P, S> = Class<React$Component<D, P, S>>;
-export type $WrappedComponent<D, P, S> = ClassComponent<D, P, S> | FunctionalComponent<P, *>;
+export type FunctionalComponent<P> = (props: P) => ?React$Element<any>;
+export type ClassComponent<P, S> = Class<React$Component<P, S>>;
+export type $WrappedComponent<P, S> = ClassComponent<P, S> | FunctionalComponent<P>;
 
 export type Values = {
   [key: string]: any;
@@ -106,7 +106,7 @@ export type FieldFormatter = (value: any, name: string) => any;
 
 export type FieldParser = (value: any, name: string) => any;
 
-export type FieldProps = {
+export type InternalFieldProps = {
   input: {
     value: any;
     onChange: Function;
@@ -124,6 +124,25 @@ export type FieldProps = {
     pristine: boolean;
     validating: boolean;
   };
+};
+
+export type FieldProps = {
+  context: DFContext;
+  name: string;
+  value?: any;
+  label?: string;
+  parser?: FieldParser;
+  formatter?: FieldFormatter;
+  validations?: Validations;
+  normalizers?: Normalizers;
+  messages?: MessageList;
+  onChange?: Function;
+  onBlur?: Function;
+  onFocus?: Function;
+  multiple?: boolean;
+};
+
+export type FieldState = {
 };
 
 export const FormPropTypes = {

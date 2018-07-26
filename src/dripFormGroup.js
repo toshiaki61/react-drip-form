@@ -38,11 +38,14 @@ export type GroupOptions = {
 
 
 const dripFormGroup = (options: GroupOptions = {}) => (
-  (WrappedComponent: $WrappedComponent<*, *, *>) => (
-    class DripFormGroup extends Component {
+  (WrappedComponent: $WrappedComponent<*, *>) => (
+    class DripFormGroup extends Component<*, *> {
       static displayName = makeDisplayName(WrappedComponent, 'dripFormGroup');
+
       static contextTypes = DFContextTypes;
+
       static childContextTypes = DFContextTypes;
+
       static defaultProps = {
         multiple: false,
         value: null,
@@ -54,8 +57,11 @@ const dripFormGroup = (options: GroupOptions = {}) => (
       };
 
       context: DFContext;
+
       props: Props;
+
       state: State;
+
       initialValue: any;
 
       constructor(props: Props, context: DFContext) {
