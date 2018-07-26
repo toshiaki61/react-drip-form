@@ -38,7 +38,7 @@ const getPropsValue = (props: FieldProps, defaultValue: any): any => (
 class DripFormField extends Component<FieldProps, *> {
   props: FieldProps;
 
-  state: FieldState;
+  state: FieldState = {};
 
   name: string;
 
@@ -64,10 +64,9 @@ class DripFormField extends Component<FieldProps, *> {
     context.register(this.name, this);
 
     this.updateMetaData(props, context, false);
-  }
 
-  // @FIXME: Refactoring
-  componentWillMount() {
+    // from componentWillMount
+    // @FIXME: Refactoring
     const contextValue = dot.get(this.props.context.values, this.name);
     let value;
 
@@ -88,16 +87,10 @@ class DripFormField extends Component<FieldProps, *> {
     this.updateMetaData(this.props, this.props.context, false);
   }
 
-  componentWillReceiveProps(nextProps: FieldProps) {
-    const {
-      register,
-      unregister,
-      updateValue,
-      updateLabel,
-      updateValidations,
-      updateNormalizers,
-      updateMessages,
-    } = this.props.context;
+  static getDerivedStateFromProps(props, state) {
+    if (!state.props) {
+      return { props };
+    }
     const {
       name: _name,
       value: _value,
@@ -105,7 +98,16 @@ class DripFormField extends Component<FieldProps, *> {
       validations: _validations,
       normalizers: _normalizers,
       messages: _messages,
-    } = this.props;
+      context: {
+        register,
+        unregister,
+        updateValue,
+        updateLabel,
+        updateValidations,
+        updateNormalizers,
+        updateMessages,
+      },
+    } = state.props;
 
     const {
       name,
@@ -114,7 +116,7 @@ class DripFormField extends Component<FieldProps, *> {
       validations,
       normalizers,
       messages,
-    } = nextProps;
+    } = props;
 
     if (name !== _name) {
       this.name = name;
@@ -123,11 +125,11 @@ class DripFormField extends Component<FieldProps, *> {
     }
 
     if (!isEqual(value, _value)) {
-      this.initialValue = value;
+      // this.initialValue = value;
       updateValue(name, value, true, true);
     }
 
-    if (!this.props.context.group) {
+    if (!state.props.context.group) {
       if (label !== _label) {
         updateLabel(name, label, true);
       }
@@ -144,6 +146,7 @@ class DripFormField extends Component<FieldProps, *> {
         updateMessages(name, messages, true);
       }
     }
+    return { props };
   }
 
   componentWillUnmount() {

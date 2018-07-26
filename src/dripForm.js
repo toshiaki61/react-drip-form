@@ -143,9 +143,6 @@ const dripForm = (formOptions: FormOptions = {}) => {
         if (typeof props.onInitialize === 'function') {
           props.onInitialize(this);
         }
-      }
-
-      componentWillMount() {
         this.mounted = true;
       }
 
@@ -157,13 +154,16 @@ const dripForm = (formOptions: FormOptions = {}) => {
         this.mounted = false;
       }
 
-      componentWillReceiveProps(nextProps: Props) {
-        const { values: _values } = this.props;
-        const { values } = nextProps;
-
-        if (!isEqual(values, _values)) {
-          this.setState({ values });
+      static getDerivedStateFromProps(props, state) {
+        if (!state.props) {
+          return { props };
         }
+        const { values: _values } = state.props;
+        const { values } = props;
+        if (!isEqual(values, _values)) {
+          return { props, values };
+        }
+        return { props };
       }
 
       setStateIfMounted(state: $Shape<State>, callback?: Function) {
@@ -180,7 +180,6 @@ const dripForm = (formOptions: FormOptions = {}) => {
         this.values = values;
         this.setStateIfMounted({ values });
         this.validator.setValues(values);
-
         if (silent === false) {
           this.onChangeIfNeeded();
         }

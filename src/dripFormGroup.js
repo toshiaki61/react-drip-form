@@ -31,6 +31,7 @@ export type Props = {
 };
 
 export type State = {
+  props: Props;
 };
 
 export type GroupOptions = {
@@ -40,7 +41,7 @@ export type GroupOptions = {
 class DripFormGroup extends Component<*, *> {
   props: Props;
 
-  state: State;
+  state: State = {};
 
   initialValue: any;
 
@@ -59,9 +60,8 @@ class DripFormGroup extends Component<*, *> {
     );
 
     this.updateMetaData(props, context, false);
-  }
 
-  componentWillMount() {
+    // from componentWiiMount
     const { name } = this.props;
     const value = this.props.value !== null
       ? this.props.value
@@ -71,22 +71,24 @@ class DripFormGroup extends Component<*, *> {
     this.updateMetaData(this.props, this.props.context, false);
   }
 
-  componentWillReceiveProps(nextProps: Props): void {
-    const {
-      updateValue,
-      updateLabel,
-      updateValidations,
-      updateNormalizers,
-      updateMessages,
-    } = this.props.context;
-
+  static getDerivedStateFromProps(props, state) {
+    if (!state.props) {
+      return { props };
+    }
     const {
       value: _value,
       label: _label,
       validations: _validations,
       normalizers: _normalizers,
       messages: _messages,
-    } = this.props;
+      context: {
+        updateValue,
+        updateLabel,
+        updateValidations,
+        updateNormalizers,
+        updateMessages,
+      },
+    } = state.props;
 
     const {
       name,
@@ -95,10 +97,10 @@ class DripFormGroup extends Component<*, *> {
       validations,
       normalizers,
       messages,
-    } = nextProps;
+    } = props;
 
     if (!isEqual(value, _value)) {
-      this.initialValue = value;
+      // this.initialValue = value;
       updateValue(name, value, true, true);
     }
 
@@ -117,6 +119,7 @@ class DripFormGroup extends Component<*, *> {
     if (!isEqual(messages, _messages)) {
       updateMessages(name, messages, true);
     }
+    return { props };
   }
 
   updateMetaData(props: Props, context: DFContext, validate: boolean): void {
