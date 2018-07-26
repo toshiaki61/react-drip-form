@@ -3,7 +3,11 @@ import isArray from './isArray';
 import * as arrays from './arrays';
 import type { InternalFieldType, InternalFieldProps } from '../types';
 
-const createFieldProps = (type: InternalFieldType, value: any, preProps: InternalFieldProps): any => {
+const createFieldProps = (
+  type: InternalFieldType,
+  value: any,
+  preProps: InternalFieldProps
+): any => {
   switch (type) {
     case 'checkbox': return {
       ...preProps,

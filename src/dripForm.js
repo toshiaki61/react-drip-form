@@ -12,9 +12,9 @@ import hasProp from './utils/hasProp';
 import cancelEvent from './utils/cancelEvent';
 import getShallowFilteredValues from './utils/getShallowFilteredValues';
 import makeDisplayName from './utils/makeDisplayName';
-import { Provider } from './dripFormContext';
+import { DripFormContext } from './context';
 
-import { DFContextTypes } from './types';
+// import { DFContextTypes } from './types';
 
 import type {
   $WrappedComponent,
@@ -88,7 +88,7 @@ const dripForm = (formOptions: FormOptions = {}) => {
     class DripForm extends React.Component<*, *> {
       static displayName = makeDisplayName(WrappedComponent, 'dripForm');
 
-      static childContextTypes = DFContextTypes;
+      // static childContextTypes = DFContextTypes;
 
       static defaultProps = {
         values: {},
@@ -145,35 +145,6 @@ const dripForm = (formOptions: FormOptions = {}) => {
         }
       }
 
-      getChildContext() {
-        const {
-          values,
-          errors,
-          validating,
-          touches,
-          dirties,
-        } = this.state;
-
-        return {
-          dripForm: true,
-          group: null,
-          register: this.register,
-          unregister: this.unregister,
-          updateValue: this.updateValue,
-          updateTouched: this.updateTouched,
-          updateDirty: this.updateDirty,
-          updateValidations: this.updateValidations,
-          updateNormalizers: this.updateNormalizers,
-          updateMessages: this.updateMessages,
-          updateLabel: this.updateLabel,
-          validating,
-          values,
-          errors,
-          touches,
-          dirties,
-        };
-      }
-
       componentWillMount() {
         this.mounted = true;
       }
@@ -191,14 +162,12 @@ const dripForm = (formOptions: FormOptions = {}) => {
         const { values } = nextProps;
 
         if (!isEqual(values, _values)) {
-          console.log('componentWillReceiveProps', values, _values);
           this.setState({ values });
         }
       }
 
       setStateIfMounted(state: $Shape<State>, callback?: Function) {
         if (this.mounted) {
-          console.log('setStateIfMounted', state, callback);
           this.setState(state, callback);
         }
       }
@@ -327,7 +296,6 @@ const dripForm = (formOptions: FormOptions = {}) => {
         delete errors[name];
 
         this.setValues(dot.remove(values, name));
-
         this.setStateIfMounted({
           errors,
           touches: touches.filter(v => v !== name),
@@ -351,7 +319,6 @@ const dripForm = (formOptions: FormOptions = {}) => {
 
       updateTouched = (name: string, touched: boolean, validate: boolean): void => {
         const touches = this.state.touches.filter(v => v !== name);
-
         this.setStateIfMounted({
           touches: !touched ? touches : [...touches, name],
         });
@@ -573,7 +540,6 @@ const dripForm = (formOptions: FormOptions = {}) => {
 
       validate(): boolean {
         const valid = this.validator.validate();
-
         this.setStateIfMounted({
           errors: this.validator.getAllErrorMessages(),
         });
@@ -597,7 +563,6 @@ const dripForm = (formOptions: FormOptions = {}) => {
               }
             });
           };
-
           this.setStateIfMounted({
             validating: [
               ...this.state.validating,
@@ -738,10 +703,29 @@ const dripForm = (formOptions: FormOptions = {}) => {
           },
         };
 
+        const context = {
+          dripForm: true,
+          group: null,
+          register: this.register,
+          unregister: this.unregister,
+          updateValue: this.updateValue,
+          updateTouched: this.updateTouched,
+          updateDirty: this.updateDirty,
+          updateValidations: this.updateValidations,
+          updateNormalizers: this.updateNormalizers,
+          updateMessages: this.updateMessages,
+          updateLabel: this.updateLabel,
+          validating: this.state.validating,
+          values: this.state.values,
+          errors: this.state.errors,
+          touches: this.state.touches,
+          dirties: this.state.dirties,
+        };
+
         return (
-          <Provider value={{ context: this.getChildContext() }}>
+          <DripFormContext.Provider value={{ context }}>
             <WrappedComponent {...props} />
-          </Provider>
+          </DripFormContext.Provider>
         );
       }
     }
